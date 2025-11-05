@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT2090 - Essay Concepts Quiz (Aug 2022)</title>
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Sinhala', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
+    #quiz-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 850px;
+        overflow: hidden;
+    }
+    #header {
+        background: linear-gradient(135deg, #4A90E2, #50E3C2);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    h2 {
+        margin: 0;
+        font-size: 1.5em;
+    }
+    #timer {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #fff;
+        background-color: rgba(0,0,0,0.2);
+        padding: 5px 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+        display: inline-block;
+        letter-spacing: 2px;
+    }
+    #question-area {
+        padding: 25px;
+    }
+    #question-text {
+        font-size: 1.2em;
+        font-weight: 500;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+    #options-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .option {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    .option.no-hover {
+        cursor: default;
+    }
+    .option:not(.no-hover):hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+    }
+    .option.correct {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+        font-weight: bold;
+    }
+    .option.incorrect {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    #feedback {
+        padding: 20px 25px 5px 25px;
+        display: none; /* Initially hidden */
+    }
+    #feedback.show {
+        display: block;
+    }
+    #explanation-text {
+        font-style: italic;
+        margin-top: 10px;
+        color: #555;
+        line-height: 1.6;
+    }
+    #navigation-palette {
+        padding: 20px 25px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        gap: 8px;
+        border-top: 1px solid #e9ecef;
+        max-height: 160px;
+        overflow-y: auto;
+    }
+    .nav-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        background-color: #f8f9fa; /* Unanswered */
+        color: #333;
+    }
+    .nav-item.current {
+        background-color: #007bff; /* Current */
+        color: white;
+        border-color: #0056b3;
+    }
+    .nav-item.answered-correct {
+        background-color: #28a745; /* Correct */
+        color: white;
+        border-color: #1e7e34;
+    }
+    .nav-item.answered-incorrect {
+        background-color: #dc3545; /* Incorrect */
+        color: white;
+        border-color: #bd2130;
+    }
+    #footer {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+    #progress-text {
+        font-size: 0.9em;
+        color: #6c757d;
+        font-weight: bold;
+    }
+    .nav-btn {
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.2s;
+    }
+    #next-btn {
+        background-color: #28a745;
+    }
+    #back-btn {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    .nav-btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div id="header">
+        <h2>IT2090 Essay Concepts - Quiz 2 (Aug 2022 Paper)</h2>
+        <div id="timer">00:00</div>
+    </div>
+    <div id="question-area">
+        <p id="question-text"></p>
+        <ul id="options-list"></ul>
+    </div>
+    <div id="feedback">
+        <p id="explanation-text"></p>
+    </div>
+    <div id="navigation-palette"></div>
+    <div id="footer">
+        <button id="back-btn" class="nav-btn">Back</button>
+        <span id="progress-text"></span>
+        <button id="next-btn" class="nav-btn">Next</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    {
+        question: "1. What are 'Foundation Values'?",
+        options: ["Values you learn from your family and childhood, which form your core character", "Values you focus on to achieve a specific, short-term goal", "Values you aim to develop in the future for your career", "Values imposed by a company's code of conduct"],
+        correct: 0,
+        explanation: "පැහැදිලි කිරීම: 'Foundation Values' (පදනම් අගයන්) යනු අප කුඩා කල සිට, විශේෂයෙන්ම පවුලෙන් උරුම වන, අපගේ චරිතයේ හරය (core character) සාදන මූලික අගයන් වේ."
+    },
+    {
+        question: "2. Meredith Belbin's 9 team roles are broadly categorized into three groups. What are they?",
+        options: ["Leaders, Followers, and Managers", "Action-oriented, People-oriented, and Thought-oriented", "Internal, External, and Support Roles", "Forming, Storming, and Norming"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: Belbin ගේ භූමිකා 9, ප්‍රධාන කාණ්ඩ 3 කට බෙදයි: 'Action-oriented' (ක්‍රියාවට නැඹුරු - Shaper, Implementer, Completer Finisher), 'People-oriented' (මිනිසුන්ට නැඹුරු - Coordinator, Teamworker, Resource Investigator), සහ 'Thought-oriented' (සිතුවිලි/දැනුමට නැඹුරු - Plant, Monitor Evaluator, Specialist)."
+    },
+    {
+        question: "3. For a software development team, which Belbin role is MOST crucial for generating new, creative ideas and solving difficult problems?",
+        options: ["Implementer (the efficient worker)", "Completer Finisher (the detail-checker)", "Plant (the creative idea-generator)", "Coordinator (the delegator)"],
+        correct: 2,
+        explanation: "පැහැදිලි කිරීම: 'Plant' (නව අදහස් ජනනය කරන්නා) යනු කණ්ඩායමේ නිර්මාණශීලී (creative) සාමාජිකයායි. මෘදුකාංග ව්‍යාපෘතියකදී නව්‍ය අදහස් සහ සංකීර්ණ ගැටළු විසඳීමට මෙම භූමිකාව අත්‍යවශ්‍ය වේ."
+    },
+    {
+        question: "4. What is generally considered the *first* step in a formal decision-making process?",
+        options: ["Brainstorm all possible solutions", "Select the best alternative", "Analyze the pros and cons", "Identify and define the problem clearly"],
+        correct: 3,
+        explanation: "පැහැදිලි කිරීම: ඵලදායී තීරණ ගැනීමේ ක්‍රියාවලියක (Decision-making process) පළමු සහ වැදගත්ම පියවර වන්නේ 'ගැටලුව කුමක්දැයි පැහැදිලිව හඳුනා ගැනීම' (Identify and define the problem) යි. ගැටලුව හරියටම නොදැන විසඳුම් සෙවීමෙන් පලක් නැත."
+    },
+    {
+        question: "5. What is the primary benefit of 'Cognitive Diversity' in a team?",
+        options: ["The team looks good due to visible differences", "It leads to better problem-solving and avoids 'groupthink'", "All team members agree with each other easily", "It simplifies the manager's job"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: 'Cognitive Diversity' (සංජානන විවිධත්වය) යනු විවිධ ආකාරවලින් සිතන සහ ගැටළු විසඳන පුද්ගලයින් කණ්ඩායමේ සිටීමයි. මෙහි ප්‍රධාන වාසිය නම්, 'groupthink' (සියල්ලන්ම එකම විදිහට සිතීම) වැළකී, වඩාත් 'හොඳින් ගැටළු විසඳීමට' (better problem-solving) හැකි වීමයි."
+    },
+    {
+        question: "6. What is the term for the responsibility of IT professionals to address environmental issues like e-waste and high energy consumption?",
+        options: ["Digital Divide", "Green IT / Sustainable IT", "Computer Ethics", "Techno-stress"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: 'Green IT' (හරිත තොරතුරු තාක්ෂණය) යනු පරිගණක තාක්ෂණය නිසා සිදුවන පාරිසරික බලපෑම් (e-waste, බලශක්ති පරිභෝජනය) අවම කිරීමට IT වෘත්තිකයන් සතු වගකීම සහ ඒ සඳහා ගන්නා ක්‍රියාමාර්ග හැඳින්වීමට යොදාගන්නා පදයයි."
+    },
+    {
+        question: "7. What is a primary purpose of having a degree program 'accredited' by a professional body like CSSL or IET?",
+        options: ["It guarantees a high starting salary for graduates", "It ensures the program meets a recognized industry standard of quality", "It means the degree is easy to complete", "It automatically makes all graduates members of that body"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: 'Accreditation' (පිළිගැනීම) මගින් වෘත්තීය ආයතනයක් (Professional Body) විසින් එම උපාධි පාඨමාලාව, 'කර්මාන්තය පිළිගත් ගුණාත්මක ප්‍රමිතියකට' (recognized industry standard of quality) අනුකූල වන බවට සහතික කරයි."
+    },
+    {
+        question: "8. A key area in the CSSL Code of Ethics is 'acting in the public interest'. What does this mean?",
+        options: ["Only doing what your client asks for", "Always protecting your employer's secrets, no matter what", "Considering the broader impact of your work on society, safety, and the environment", "Focusing only on maximizing profit"],
+        correct: 2,
+        explanation: "පැහැදිලි කිරීම: 'මහජන යහපත' (Public Interest) වෙනුවෙන් ක්‍රියා කිරීම යනු, තම සේවාදායකයාට
+හෝ ආයතනයට සේවය කරන අතරතුර, තම කාර්යයේ 'සමාජය, ආරක්ෂාව සහ පරිසරය' (society, safety, and environment) කෙරෙහි වන පුළුල් බලපෑම පිළිබඳවද සදාචාරාත්මකව වගකීමෙන් කටයුතු කිරීමයි."
+    },
+    {
+        question: "9. In the Business Model Canvas, what does the 'Value Proposition' describe?",
+        options: ["The list of all your partners and suppliers", "The different groups of customers you are targeting", "The bundle of products and services that create value for a specific customer segment", "The costs involved in running the business"],
+        correct: 2,
+        explanation: "පැහැදිලි කිරීම: 'Value Proposition' (වටිනාකම් යෝජනාව) යනු, ඔබ ඔබේ 'නිශ්චිත පාරිභෝගික කාණ්ඩය' (customer segment) සඳහා ලබා දෙන 'වටිනාකම නිර්මාණය කරන භාණ්ඩ හා සේවා මිටිය' (bundle of products and services) කුමක්ද යන්නයි. 'ඔබව අන් අයගෙන් වෙනස් කරන්නේ කුමක්ද?' යන්න මෙයින් කියැවේ."
+    },
+    {
+        question: "10. What is the main purpose of a PEST analysis in business strategy?",
+        options: ["To analyze a company's internal Strengths, Weaknesses, Opportunities, and Threats", "To analyze the external macro-environmental factors (Political, Economic, Social, Technological)", "To define the company's value proposition", "To segment the customer market"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: PEST විශ්ලේෂණයක් මගින් ව්‍යාපාරයකට පාලනය කළ නොහැකි, 'බාහිර සාර්ව-පාරිසරික සාධක' (external macro-environmental factors) විශ්ලේෂණය කරයි. එනම්: Political (දේශපාලනික), Economic (ආර්ථික), Social (සමාජීය), and Technological (තාක්ෂණික) සාධකයි."
+    },
+    {
+        question: "11. What is a key difference between SWOT and PEST analysis?",
+        options: ["SWOT is only for small companies, PEST is for large ones", "PEST is purely external, while SWOT analyzes both internal (S, W) and external (O, T) factors", "SWOT is for marketing, PEST is for finance", "PEST is outdated, SWOT is modern"],
+        correct: 1,
+        explanation: "පැහැදිලි කිරීම: PEST විශ්ලේෂණය 'සම්පූර්ණයෙන්ම බාහිර' (purely external) සාධක (P,E,S,T) ගැන පමණක් අවධානය යොමු කරයි. SWOT විශ්ලේෂණය 'අභ්‍යන්තර' (Internal) සාධක (Strengths, Weaknesses) සහ 'බාහිර' (External) සාධක (Opportunities, Threats) යන දෙකම දෙස බලයි."
+    },
+    {
+        question: "12. Which Sri Lankan Act primarily deals with offenses like hacking, unauthorized access to data, and spreading viruses?",
+        options: ["Intellectual Property Act", "Electronic Transactions Act", "Computer Crimes Act", "Evidence (Special Provisions) Act"],
+        correct: 2,
+        explanation: "පැහැදිලි කිරීම: 'පරිගණක අපරාධ පනත' (Computer Crimes Act) මගින් Hacking, දත්ත වලට අනවසරයෙන් ඇතුල් වීම (unauthorized access) සහ පරිගණක වෛරස (viruses) පැතිරවීම වැනි 'පරිගණක අපරාධ' සම්බන්ධ නීතිමය කරුණු ආවරණය කරයි."
+    }
+];
+
+
+// ------------- QUIZ LOGIC (User's Original Code) -------------
+
+const questionTextEl = document.getElementById('question-text');
+const optionsListEl = document.getElementById('options-list');
+const feedbackEl = document.getElementById('feedback');
+const explanationTextEl = document.getElementById('explanation-text');
+const nextBtn = document.getElementById('next-btn');
+const backBtn = document.getElementById('back-btn');
+const progressTextEl = document.getElementById('progress-text');
+const quizContainer = document.getElementById('quiz-container');
+const timerEl = document.getElementById('timer');
+const navPaletteEl = document.getElementById('navigation-palette');
+
+const quizTimeInMinutes = 15; // 12 questions
+let timeRemaining = quizTimeInMinutes * 60;
+let timerInterval;
+let quizFinished = false;
+
+let currentQuestionIndex = 0;
+let userAnswers = new Array(quizData.length).fill(null);
+
+function startTimer() {
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (quizFinished) return;
+    timeRemaining--;
+    const minutes = Math.floor(timeRemaining / 60);
+    let seconds = timeRemaining % 60;
+
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+
+    timerEl.innerText = `${minutesStr}:${seconds}`;
+
+    if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        showResults(true); // true indicates time is up
+    }
+}
+
+function renderNavigationPalette() {
+    navPaletteEl.innerHTML = '';
+    for (let i = 0; i < quizData.length; i++) {
+        const navItem = document.createElement('div');
+        navItem.innerText = i + 1;
+        navItem.classList.add('nav-item');
+        navItem.dataset.index = i;
+        navItem.addEventListener('click', (e) => {
+            jumpToQuestion(parseInt(e.target.dataset.index));
+        });
+        navPaletteEl.appendChild(navItem);
+    }
+    updateNavigationPalette();
+}
+
+function updateNavigationPalette() {
+    const navItems = navPaletteEl.children;
+    for (let i = 0; i < navItems.length; i++) {
+        const item = navItems[i];
+        item.classList.remove('current', 'answered-correct', 'answered-incorrect');
+
+        if (userAnswers[i] !== null) {
+            if (userAnswers[i] === quizData[i].correct) {
+                item.classList.add('answered-correct');
+            } else {
+                item.classList.add('answered-incorrect');
+            }
+        }
+        
+        if (i === currentQuestionIndex) {
+            item.classList.add('current');
+        }
+    }
+}
+
+function jumpToQuestion(index) {
+    if (index >= 0 && index < quizData.length) {
+        currentQuestionIndex = index;
+        loadQuestion();
+    }
+}
+
+function loadQuestion() {
+    const currentQuestion = quizData[currentQuestionIndex];
+    questionTextEl.innerText = currentQuestion.question;
+    optionsListEl.innerHTML = '';
+    feedbackEl.classList.remove('show');
+    
+    backBtn.disabled = currentQuestionIndex === 0;
+    nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+
+    if (currentQuestionIndex === quizData.length - 1) {
+        nextBtn.innerText = 'Show Results';
+    } else {
+        nextBtn.innerText = 'Next';
+    }
+
+    currentQuestion.options.forEach((option, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = option;
+        li.classList.add('option');
+        li.dataset.index = index;
+        
+        if (userAnswers[currentQuestionIndex] === null) {
+            li.addEventListener('click', selectAnswer);
+        } else {
+            li.classList.add('no-hover');
+            const correctAnswerIndex = currentQuestion.correct;
+            const storedAnswerIndex = userAnswers[currentQuestionIndex];
+
+            if (index === correctAnswerIndex) {
+                li.classList.add('correct');
+            }
+            if (index === storedAnswerIndex && storedAnswerIndex !== correctAnswerIndex) {
+                li.classList.add('incorrect');
+            }
+        }
+        optionsListEl.appendChild(li);
+    });
+
+    if (userAnswers[currentQuestionIndex] !== null) {
+        showFeedback();
+    }
+    
+    progressTextEl.innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+    updateNavigationPalette();
+}
+
+function selectAnswer(e) {
+    if (userAnswers[currentQuestionIndex] !== null) return; 
+
+    const selectedOption = e.target;
+    const selectedAnswerIndex = parseInt(selectedOption.dataset.index);
+    userAnswers[currentQuestionIndex] = selectedAnswerIndex;
+
+    const currentQuestion = quizData[currentQuestionIndex];
+    const correctAnswerIndex = currentQuestion.correct;
+
+    if (selectedAnswerIndex === correctAnswerIndex) {
+        selectedOption.classList.add('correct');
+    } else {
+        selectedOption.classList.add('incorrect');
+        optionsListEl.children[correctAnswerIndex].classList.add('correct');
+    }
+    
+    Array.from(optionsListEl.children).forEach(child => {
+        child.removeEventListener('click', selectAnswer);
+        child.classList.add('no-hover');
+    });
+
+    showFeedback();
+    nextBtn.disabled = false;
+    updateNavigationPalette();
+}
+
+function showFeedback() {
+    const currentQuestion = quizData[currentQuestionIndex];
+    explanationTextEl.innerHTML = `<b>Correct Answer: ${currentQuestion.options[currentQuestion.correct]}</b><br>${currentQuestion.explanation}`;
+    feedbackEl.classList.add('show');
+}
+
+function showResults(timeIsUp = false) {
+    quizFinished = true;
+    clearInterval(timerInterval);
+    
+    let finalScore = 0;
+    for (let i = 0; i < quizData.length; i++) {
+        if (userAnswers[i] === quizData[i].correct) {
+            finalScore++;
+        }
+    }
+
+    let resultMessage = timeIsUp ? `<h2>Time's Up!</h2>` : `<h2>Quiz Completed!</h2>`;
+
+    quizContainer.innerHTML = `
+        <div id="header">
+            ${resultMessage}
+        </div>
+        <div id="question-area" style="text-align: center;">
+            <p style="font-size: 1.5em; margin: 20px;">Your final score is</p>
+            <p style="font-size: 3em; font-weight: bold; color: #4A90E2;">${finalScore} out of ${quizData.length}</p>
+            <button id="restart-btn" style="background-color: #4A90E2; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 1.2em; margin-top: 20px;">Restart Quiz</button>
+        </div>
+    `;
+    document.getElementById('restart-btn').addEventListener('click', () => {
+        location.reload();
+    });
+}
+
+nextBtn.addEventListener('click', () => {
+    if (currentQuestionIndex < quizData.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        showResults();
+    }
+});
+
+backBtn.addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+    }
+});
+
+// Initial load
+renderNavigationPalette();
+loadQuestion();
+startTimer();
+
+</script>
+</body>
+</html>
